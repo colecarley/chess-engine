@@ -1,6 +1,7 @@
 #pragma once
 #include "colors.h"
 #include "common.h"
+#include "game_info.h"
 
 enum PieceType
 {
@@ -22,6 +23,8 @@ struct MoveDescription
 
 struct Move
 {
+    int rank;
+    char file;
     int row;
     int col;
     bool capture;
@@ -37,11 +40,6 @@ struct Piece
 char piece_get_name(Piece piece);
 
 struct Board;
-void piece_print_possible_moves(Piece *p, struct Board *b, int row, int col);
-Move *generate_moves(Piece *p,
-                     struct Board *b,
-                     MoveDescription *moves,
-                     int moves_length,
-                     int row,
-                     int col,
-                     int *moves_count);
+void piece_print_possible_moves(Piece *p, struct Board *b, GameInfo *game_info, int row, int col);
+static Move *generate_moves(Piece *p, struct Board *b, MoveDescription *moves, int moves_length, int row, int col, int *moves_count);
+bool piece_move_is_valid(Piece *p, struct Board *b, GameInfo *game_info, int row, int col, int new_row, int new_col);

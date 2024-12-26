@@ -15,3 +15,8 @@ bool square_is_occupied(Square *s)
 {
     return s->type == OCCUPIED;
 };
+
+bool square_is_empty(Square *s)
+{
+    return s->type == EMPTY;
+};
