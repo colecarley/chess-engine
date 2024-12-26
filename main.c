@@ -4,13 +4,6 @@
 
 #define MAX_CHARACTERS 100
 
-void print_menu()
-{
-    printf("Enter move (E2E4):\n");
-    printf("q to exit\n");
-    printf("s E2 to show possible moves\n");
-}
-
 bool is_scan_error(int scan_result)
 {
     if (scan_result <= 0)
@@ -36,11 +29,15 @@ int main()
     Board board;
     GameInfo game_info;
     board_init(&board);
-
+    bool clear = true;
     while (true)
     {
-        board_print(&board);
-        print_menu();
+        if (clear)
+        {
+            printf("\033[2J\033[1;1H");
+            board_print(&board);
+        }
+        printf(">");
         char *buf;
         fgets(buf, MAX_CHARACTERS, stdin);
 
@@ -58,7 +55,6 @@ int main()
             }
 
             get_coordinates(&row, &col, file, rank);
-            printf("the row and col is: %d, %d\n", row, col);
             board_print_possible_moves(&board, &game_info, row, col);
         }
         else
@@ -76,6 +72,11 @@ int main()
             if (board_move_piece(&board, &game_info, row, col, new_row, new_col))
             {
                 game_info_switch_turn(&game_info);
+                clear = true;
+            }
+            else
+            {
+                clear = false;
             }
         }
     }
