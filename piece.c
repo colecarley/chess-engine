@@ -137,16 +137,16 @@ void piece_print_possible_moves(Piece *p, struct Board *b, GameInfo *game_info, 
     free(moves);
 }
 
-static Move *generate_moves(Piece *p, struct Board *b, MoveDescription *moves, int moves_length, int row, int col, int *moves_count)
+static Move *generate_moves(Piece *p, struct Board *b, MoveDescription *move_descriptions, int moves_length, int row, int col, int *moves_count)
 {
     Move *possible_moves = malloc(sizeof(Move) * MAX_MOVES);
     int possible_moves_count = 0;
     for (int i = 0; i < moves_length; i++)
     {
-        for (int j = 1; j <= moves[1].steps; j++)
+        for (int j = 1; j <= move_descriptions[1].steps; j++)
         {
-            int new_row = row + (moves[i].row * j);
-            int new_col = col + (moves[i].col * j);
+            int new_row = row + (move_descriptions[i].row * j);
+            int new_col = col + (move_descriptions[i].col * j);
 
             int rank;
             char file;
@@ -160,7 +160,7 @@ static Move *generate_moves(Piece *p, struct Board *b, MoveDescription *moves, i
             Square *s = board_at(b, new_row, new_col);
             if (square_is_occupied(s))
             {
-                if (s->piece.color != p->color && moves[i].can_capture)
+                if (s->piece.color != p->color && move_descriptions[i].can_capture)
                 {
                     possible_moves[possible_moves_count++] = (Move){
                         rank,
