@@ -1,6 +1,7 @@
 #include "vector.h"
 #include "board.h"
 #include "game_info.h"
+#include "common.h"
 
 #define MAX_CHARACTERS 100
 
@@ -38,7 +39,7 @@ int main()
             board_print(&board);
         }
         printf(">");
-        char *buf;
+        char *buf = malloc(MAX_CHARACTERS);
         fgets(buf, MAX_CHARACTERS, stdin);
 
         if (buf[0] == 'q')
@@ -53,6 +54,7 @@ int main()
             {
                 continue;
             }
+            clear = false;
 
             get_coordinates(&row, &col, file, rank);
             board_print_possible_moves(&board, &game_info, row, col);

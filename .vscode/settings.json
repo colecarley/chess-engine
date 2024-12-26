@@ -1,5 +1,11 @@
 {
     "files.associations": {
-        "board.h": "c"
+        "board.h": "c",
+        "game_info.h": "c",
+        "sdl.h": "c",
+        "vector.h": "c",
+        "common.h": "c",
+        "stdbool.h": "c",
+        "stdio.h": "c"
     }
 }

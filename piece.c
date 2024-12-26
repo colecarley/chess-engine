@@ -1,5 +1,6 @@
 #include "piece.h"
 #include "board.h"
+#include "common.h"
 
 #define MAX_MOVES 64
 #define PAWN_MOVES 4
@@ -8,6 +9,8 @@
 #define ROOK_MOVES 4
 #define QUEEN_MOVES 8
 #define KING_MOVES 8
+
+static Move *generate_moves(Piece *p, struct Board *b, MoveDescription *move_descriptions, int moves_length, int row, int col, int *moves_count);
 
 char piece_get_name(Piece piece)
 {
@@ -124,15 +127,13 @@ void piece_print_possible_moves(Piece *p, struct Board *b, GameInfo *game_info, 
     {
         if (moves[i].capture)
         {
-            printf("Capture %c: %d, %d\n", piece_get_name(board_at(b, moves[i].file, moves[i].rank)->piece), moves[i].row, moves[i].col);
+            printf("Capture %c: %c%d\n", piece_get_name(board_at(b, moves[i].file, moves[i].rank)->piece), moves[i].file, moves[i].rank);
         }
         else
         {
-            printf("Move: %d, %d\n", moves[i].row, moves[i].col);
+            printf("Move: %c%d\n", moves[i].file, moves[i].rank);
         }
     }
-
-    printf("there are %d possible moves for %c\n", moves_count, piece_get_name(*p));
 
     free(moves);
 }
