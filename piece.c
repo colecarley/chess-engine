@@ -33,17 +33,18 @@ char piece_get_name(Piece piece)
     }
 }
 
+// TODO: Add en passant and promotion
 static MoveDescription white_pawn_moves[PAWN_MOVES] = {
     {1, 0, 1, false},
-    {1, 1, 1, true},  // must capture
-    {1, -1, 1, true}, // must capture
-    {2, 0, 1, false}};
+    {1, 1, 1, true},   // must capture
+    {1, -1, 1, true},  // must capture
+    {2, 0, 1, false}}; // only on first move
 
 static MoveDescription black_pawn_moves[PAWN_MOVES] = {
     {-1, 0, 1, false},
-    {-1, 1, 1, true},  // must capture
-    {-1, -1, 1, true}, // must capture
-    {-2, 0, 1, false}};
+    {-1, 1, 1, true},   // must capture
+    {-1, -1, 1, true},  // must capture
+    {-2, 0, 1, false}}; // only on first move
 
 static MoveDescription knight_moves[KNIGHT_MOVES] = {
     {1, 2, 1, true},
@@ -95,6 +96,17 @@ static void get_file_and_rank(char *file, int *rank, int col, int row)
 
 void piece_print_possible_moves(Piece *p, struct Board *b, GameInfo *game_info, int row, int col)
 {
+    if (game_info_is_white_turn(game_info) && p->color == BLACK)
+    {
+        printf("It's white's turn, cannot move black piece\n");
+        return;
+    }
+    else if (!game_info_is_white_turn(game_info) && p->color == WHITE)
+    {
+        printf("It's black's turn, cannot move white piece\n");
+        return;
+    }
+
     Move *moves;
     int moves_count = 0;
     switch (p->type)

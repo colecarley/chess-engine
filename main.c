@@ -22,7 +22,10 @@ bool is_scan_error(int scan_result)
 void get_coordinates(int *row, int *col, char file, int rank)
 {
     *row = rank - 1;
-    *col = file - 'A';
+    if (file >= 'a' && file <= 'h')
+        *col = file - 'a';
+    else
+        *col = file - 'A';
 }
 
 int main()
@@ -30,6 +33,7 @@ int main()
     Board board;
     GameInfo game_info;
     board_init(&board);
+    game_info_init(&game_info);
     bool clear = true;
     while (true)
     {
