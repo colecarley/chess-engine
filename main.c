@@ -1,4 +1,3 @@
-#include "vector.h"
 #include "board.h"
 #include "game_info.h"
 #include "common.h"
@@ -17,15 +16,6 @@ bool is_scan_error(int scan_result)
     }
 
     return scan_result <= 0;
-}
-
-void get_coordinates(int *row, int *col, char file, int rank)
-{
-    *row = rank - 1;
-    if (file >= 'a' && file <= 'h')
-        *col = file - 'a';
-    else
-        *col = file - 'A';
 }
 
 int main()
@@ -51,7 +41,6 @@ int main()
 
         char file;
         int rank;
-        int row, col;
         if (buf[0] == 's')
         {
             if (is_scan_error(sscanf(buf, "s %c%d", &file, &rank)))
@@ -60,22 +49,18 @@ int main()
             }
             clear = false;
 
-            get_coordinates(&row, &col, file, rank);
-            board_print_possible_moves(&board, &game_info, row, col);
+            board_print_possible_moves(&board, &game_info, file, rank);
         }
         else
         {
             char new_file;
             int new_rank;
-            int new_row, new_col;
             if (is_scan_error(sscanf(buf, "%c%d%c%d", &file, &rank, &new_file, &new_rank)))
             {
                 continue;
             }
 
-            get_coordinates(&row, &col, file, rank);
-            get_coordinates(&new_row, &new_col, new_file, new_rank);
-            if (board_move_piece(&board, &game_info, row, col, new_row, new_col))
+            if (board_move_piece(&board, &game_info, file, rank, new_file, new_rank))
             {
                 game_info_switch_turn(&game_info);
                 clear = true;
