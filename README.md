@@ -23,7 +23,7 @@ The following are features that need to be implemented:
 - Check
 - Checkmate
 - Stalemate
-- Castling
+- Promotion
 
 The following are features that *could* be implemented:
 
