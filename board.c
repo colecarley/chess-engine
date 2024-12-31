@@ -154,74 +154,163 @@ static enum PieceType get_piece_type(Board *b, Bitboard bb)
     exit(1);
 }
 
-static void move_white_pawn(Board *b, Bitboard from, Bitboard to)
+static void update_black_after_capture(Board *b, Bitboard to)
+{
+    b->black_pawns &= ~to;
+    b->black_knights &= ~to;
+    b->black_bishops &= ~to;
+    b->black_rooks &= ~to;
+    b->black_queens &= ~to;
+    b->black_king &= ~to;
+}
+
+static void update_white_after_capture(Board *b, Bitboard to)
+{
+    b->white_pawns &= ~to;
+    b->white_knights &= ~to;
+    b->white_bishops &= ~to;
+    b->white_rooks &= ~to;
+    b->white_queens &= ~to;
+    b->white_king &= ~to;
+}
+
+static void move_white_pawn(Board *b, GameInfo *game_info, Bitboard from, Bitboard to)
 {
     b->white_pawns = (b->white_pawns & ~from) | to;
+    UNUSED(game_info);
+
+    if (b->black_pieces & to)
+        update_black_after_capture(b, to);
 }
 
-static void move_white_knight(Board *b, Bitboard from, Bitboard to)
+static void move_white_knight(Board *b, GameInfo *game_info, Bitboard from, Bitboard to)
 {
     b->white_knights = (b->white_knights & ~from) | to;
+    UNUSED(game_info);
+
+    if (b->black_pieces & to)
+        update_black_after_capture(b, to);
 }
 
-static void move_white_bishop(Board *b, Bitboard from, Bitboard to)
+static void move_white_bishop(Board *b, GameInfo *game_info, Bitboard from, Bitboard to)
 {
     b->white_bishops = (b->white_bishops & ~from) | to;
+    UNUSED(game_info);
+
+    if (b->black_pieces & to)
+        update_black_after_capture(b, to);
 }
 
-static void move_white_rook(Board *b, Bitboard from, Bitboard to)
+static void move_white_rook(Board *b, GameInfo *game_info, Bitboard from, Bitboard to)
 {
+    if (from == (Bitboard)0b10000000)
+        game_info_set_white_can_castle_queenside(game_info, false);
+    if (from == (Bitboard)0b00000001)
+        game_info_set_white_can_castle_kingside(game_info, false);
+
     b->white_rooks = (b->white_rooks & ~from) | to;
+
+    if (b->black_pieces & to)
+        update_black_after_capture(b, to);
 }
 
-static void move_white_queen(Board *b, Bitboard from, Bitboard to)
+static void move_white_queen(Board *b, GameInfo *game_info, Bitboard from, Bitboard to)
 {
     b->white_queens = (b->white_queens & ~from) | to;
+    UNUSED(game_info);
+
+    if (b->black_pieces & to)
+        update_black_after_capture(b, to);
 }
 
-static void move_white_king(Board *b, Bitboard from, Bitboard to)
+static void move_white_king(Board *b, GameInfo *game_info, Bitboard from, Bitboard to)
 {
     b->white_king = (b->white_king & ~from) | to;
+
+    if (b->black_pieces & to)
+        update_black_after_capture(b, to);
+
+    if (from == king_row && to == (0b00000100))
+        move_white_rook(b, game_info, 0b00000001, 0b00001000);
+    else if (from == king_row && to == (0b01000000))
+        move_white_rook(b, game_info, 0b10000000, 0b00100000);
+
+    game_info_set_white_can_castle_kingside(game_info, false);
+    game_info_set_white_can_castle_queenside(game_info, false);
 }
 
-static void move_black_pawn(Board *b, Bitboard from, Bitboard to)
+static void move_black_pawn(Board *b, GameInfo *game_info, Bitboard from, Bitboard to)
 {
     b->black_pawns = (b->black_pawns & ~from) | to;
+    UNUSED(game_info);
+
+    if (b->white_pieces & to)
+        update_white_after_capture(b, to);
 }
 
-static void move_black_knight(Board *b, Bitboard from, Bitboard to)
+static void move_black_knight(Board *b, GameInfo *game_info, Bitboard from, Bitboard to)
 {
     b->black_knights = (b->black_knights & ~from) | to;
+    UNUSED(game_info);
+
+    if (b->white_pieces & to)
+        update_white_after_capture(b, to);
 }
 
-static void move_black_bishop(Board *b, Bitboard from, Bitboard to)
+static void move_black_bishop(Board *b, GameInfo *game_info, Bitboard from, Bitboard to)
 {
     b->black_bishops = (b->black_bishops & ~from) | to;
+    UNUSED(game_info);
+
+    if (b->white_pieces & to)
+        update_white_after_capture(b, to);
 }
 
-static void move_black_rook(Board *b, Bitboard from, Bitboard to)
+static void move_black_rook(Board *b, GameInfo *game_info, Bitboard from, Bitboard to)
 {
     b->black_rooks = (b->black_rooks & ~from) | to;
+
+    if (from == (Bitboard)0b10000000 << 56)
+        game_info_set_black_can_castle_queenside(game_info, false);
+    else if (from == (Bitboard)0b00000001 << 56)
+        game_info_set_black_can_castle_kingside(game_info, false);
+
+    if (b->white_pieces & to)
+        update_white_after_capture(b, to);
 }
 
-static void move_black_queen(Board *b, Bitboard from, Bitboard to)
+static void move_black_queen(Board *b, GameInfo *game_info, Bitboard from, Bitboard to)
 {
     b->black_queens = (b->black_queens & ~from) | to;
+    UNUSED(game_info);
+
+    if (b->white_pieces & to)
+        update_white_after_capture(b, to);
 }
 
-static void move_black_king(Board *b, Bitboard from, Bitboard to)
+static void move_black_king(Board *b, GameInfo *game_info, Bitboard from, Bitboard to)
 {
     b->black_king = (b->black_king & ~from) | to;
+
+    if (b->white_pieces & to)
+        update_white_after_capture(b, to);
+
+    if (from == king_row << 56 && to == ((Bitboard)0b00000100 << 56)) // queenside
+        move_black_rook(b, game_info, (Bitboard)0b00000001 << 56, (Bitboard)0b00001000 << 56);
+    else if (from == king_row << 56 && to == ((Bitboard)0b01000000 << 56)) // kingside
+        move_black_rook(b, game_info, (Bitboard)0b10000000 << 56, (Bitboard)0b00100000 << 56);
+    game_info_set_black_can_castle_kingside(game_info, false);
+    game_info_set_black_can_castle_queenside(game_info, false);
 }
 
-typedef void (*MoveFunc)(Board *b, Bitboard from, Bitboard to);
+typedef void (*MoveFunc)(Board *b, GameInfo *game_info, Bitboard from, Bitboard to);
 static MoveFunc move_map[2][6] = {
     {move_white_pawn, move_white_knight, move_white_bishop, move_white_rook, move_white_queen, move_white_king},
     {move_black_pawn, move_black_knight, move_black_bishop, move_black_rook, move_black_queen, move_black_king}};
 
-static bool is_valid_pawn_move(Board *b, Bitboard from, Bitboard to)
+static bool is_valid_pawn_move(Board *b, GameInfo *game_info, Bitboard from, Bitboard to)
 {
-    UNUSED(b);
+    UNUSED(game_info);
     uint8_t from_pos = BIT_POS(from);
     uint8_t to_pos = BIT_POS(to);
     uint8_t diff = abs(from_pos - to_pos);
@@ -259,9 +348,10 @@ static bool is_valid_pawn_move(Board *b, Bitboard from, Bitboard to)
     return false;
 }
 
-static bool is_valid_knight_move(Board *b, Bitboard from, Bitboard to)
+static bool is_valid_knight_move(Board *b, GameInfo *game_info, Bitboard from, Bitboard to)
 {
     UNUSED(b);
+    UNUSED(game_info);
     uint8_t from_pos = BIT_POS(from);
     uint8_t to_pos = BIT_POS(to);
     uint8_t diff = abs(from_pos - to_pos);
@@ -276,23 +366,24 @@ static bool is_valid_knight_move(Board *b, Bitboard from, Bitboard to)
 
 static bool is_piece_higher(Board *b, Bitboard from, uint8_t diff, int factor)
 {
-    for (int i = 1; i < diff; i++)
+    for (int i = 1; i < diff / factor; i++)
         if (b->all_pieces & (from >> i * factor))
-            return false;
-    return true;
+            return true;
+    return false;
 }
 
 static bool is_piece_lower(Board *b, Bitboard from, uint8_t diff, int factor)
 {
     for (int i = 1; i < diff / factor; i++)
         if (b->all_pieces & (from << i * factor))
-            return false;
-    return true;
+            return true;
+    return false;
 }
 
-static bool is_valid_bishop_move(Board *b, Bitboard from, Bitboard to)
+static bool is_valid_bishop_move(Board *b, GameInfo *game_info, Bitboard from, Bitboard to)
 {
     UNUSED(b);
+    UNUSED(game_info);
     uint8_t from_pos = BIT_POS(from);
     uint8_t to_pos = BIT_POS(to);
     uint8_t diff = abs(from_pos - to_pos);
@@ -300,22 +391,23 @@ static bool is_valid_bishop_move(Board *b, Bitboard from, Bitboard to)
     if (diff % 7 == 0)
     {
         if (from < to)
-            return is_piece_higher(b, from, diff / 7, 7);
-        return is_piece_lower(b, from, diff / 7, 7);
+            return !is_piece_higher(b, from, diff - 1, 7);
+        return !is_piece_lower(b, from, diff - 1, 7);
     }
 
     if (diff % 9 == 0)
     {
         if (from < to) // moving up
-            return is_piece_higher(b, from, diff / 9, 9);
-        return is_piece_lower(b, from, diff / 9, 9);
+            return !is_piece_higher(b, from, diff - 1, 9);
+        return !is_piece_lower(b, from, diff - 1, 9);
     }
 
     return false;
 }
 
-static bool is_valid_rook_move(Board *b, Bitboard from, Bitboard to)
+static bool is_valid_rook_move(Board *b, GameInfo *game_info, Bitboard from, Bitboard to)
 {
+    UNUSED(game_info);
     uint8_t from_pos = BIT_POS(from);
     uint8_t to_pos = BIT_POS(to);
     uint8_t diff = abs(from_pos - to_pos);
@@ -326,8 +418,9 @@ static bool is_valid_rook_move(Board *b, Bitboard from, Bitboard to)
             return false;
 
         if (from > to) // moving up
-            return is_piece_higher(b, from, diff / 8, 8);
-        return is_piece_lower(b, from, diff / 8, 8);
+            return !is_piece_higher(b, from, diff - 1, 8);
+        else
+            return !is_piece_lower(b, from, diff - 1, 8);
     }
 
     if (diff < 8)
@@ -336,22 +429,23 @@ static bool is_valid_rook_move(Board *b, Bitboard from, Bitboard to)
             return false;
 
         if (from > to) // moving left
-            return is_piece_higher(b, from, diff, 1);
-        return is_piece_lower(b, from, diff, 1);
+            return !is_piece_higher(b, from, diff - 1, 1);
+        return !is_piece_lower(b, from, diff - 1, 1);
     }
 
     return false;
 }
 
-static bool is_valid_queen_move(Board *b, Bitboard from, Bitboard to)
+static bool is_valid_queen_move(Board *b, GameInfo *game_info, Bitboard from, Bitboard to)
 {
-    return is_valid_bishop_move(b, from, to) || is_valid_rook_move(b, from, to);
+    return is_valid_bishop_move(b, game_info, from, to) || is_valid_rook_move(b, game_info, from, to);
 }
 
 static uint8_t valid_king_moves[8] = {1, 7, 8, 9, -1, -7, -8, -9};
-static bool is_valid_king_move(Board *b, Bitboard from, Bitboard to)
+static bool is_valid_king_move(Board *b, GameInfo *game_info, Bitboard from, Bitboard to)
 {
     UNUSED(b);
+    UNUSED(game_info);
     uint8_t from_pos = BIT_POS(from);
     uint8_t to_pos = BIT_POS(to);
     uint8_t diff = abs(from_pos - to_pos);
@@ -360,10 +454,26 @@ static bool is_valid_king_move(Board *b, Bitboard from, Bitboard to)
         if (diff == valid_king_moves[i])
             return true;
 
+    if (game_info->white_turn)
+    {
+        if (from == king_row && to == (Bitboard)0b00000100)
+            return game_info->white_can_castle_kingside && !((Bitboard)0b00001110 & b->all_pieces);
+
+        if (from == king_row && to == (Bitboard)0b01000000)
+            return game_info->white_can_castle_queenside && !((Bitboard)0b01100000 & b->all_pieces);
+    }
+    else
+    {
+        if (from == king_row << 56 && to == (Bitboard)0b00000100 << 56)
+            return game_info->black_can_castle_kingside && !(((Bitboard)0b00001110 << 56 & b->all_pieces));
+        if (from == king_row << 56 && to == (Bitboard)0b01000000 << 56)
+            return game_info->black_can_castle_queenside && !(((Bitboard)0b01100000 << 56 & b->all_pieces));
+    }
+
     return false;
 }
 
-typedef bool (*ValidMoveFunc)(Board *b, Bitboard from, Bitboard to);
+typedef bool (*ValidMoveFunc)(Board *b, GameInfo *game_info, Bitboard from, Bitboard to);
 static ValidMoveFunc valid_move_map[6] = {
     is_valid_pawn_move,
     is_valid_knight_move,
@@ -374,18 +484,18 @@ static ValidMoveFunc valid_move_map[6] = {
 
 static bool is_valid_move(Board *b, GameInfo *game_info, Bitboard from, Bitboard to)
 {
-    if (game_info_is_white_turn(game_info) && !(b->white_pieces & from))
-        return false;
+    // if (game_info->white_turn && !(b->white_pieces & from))
+    //     return false;
+    // else if (!game_info->white_turn && !(b->black_pieces & from))
+    //     return false;
 
     if (!piece_at(b, from))
         return false;
 
     if (piece_at(b, to) && get_piece_color(b, from) == get_piece_color(b, to))
-    {
         return false;
-    }
 
-    return valid_move_map[get_piece_type(b, from)](b, from, to);
+    return valid_move_map[get_piece_type(b, from)](b, game_info, from, to);
 }
 
 bool board_move_piece(Board *b, GameInfo *game_info, char from_file, int from_rank, char to_file, int to_rank)
@@ -403,7 +513,7 @@ bool board_move_piece(Board *b, GameInfo *game_info, char from_file, int from_ra
         return false;
     }
 
-    move_map[get_piece_color(b, from)][get_piece_type(b, from)](b, from, to);
+    move_map[get_piece_color(b, from)][get_piece_type(b, from)](b, game_info, from, to);
 
     board_upate_all_pieces(b);
     return true;
@@ -424,7 +534,7 @@ void board_print_possible_moves(Board *b, GameInfo *game_info, char file, int ra
         if (piece_at(b, to) && get_piece_color(b, from) == get_piece_color(b, to))
             continue;
 
-        if (predicate(b, from, (Bitboard)1 << i))
+        if (predicate(b, game_info, from, (Bitboard)1 << i))
         {
             printf("%d. %c%d ", ++count, 'A' + i % 8, i / 8 + 1);
         }

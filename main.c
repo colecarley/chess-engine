@@ -44,9 +44,7 @@ int main()
         if (buf[0] == 's')
         {
             if (is_scan_error(sscanf(buf, "s %c%d", &file, &rank)))
-            {
                 continue;
-            }
             clear = false;
 
             board_print_possible_moves(&board, &game_info, file, rank);
@@ -56,9 +54,7 @@ int main()
             char new_file;
             int new_rank;
             if (is_scan_error(sscanf(buf, "%c%d%c%d", &file, &rank, &new_file, &new_rank)))
-            {
                 continue;
-            }
 
             if (board_move_piece(&board, &game_info, file, rank, new_file, new_rank))
             {
@@ -66,9 +62,7 @@ int main()
                 clear = true;
             }
             else
-            {
                 clear = false;
-            }
         }
     }
 
