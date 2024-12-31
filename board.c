@@ -484,10 +484,10 @@ static ValidMoveFunc valid_move_map[6] = {
 
 static bool is_valid_move(Board *b, GameInfo *game_info, Bitboard from, Bitboard to)
 {
-    // if (game_info->white_turn && !(b->white_pieces & from))
-    //     return false;
-    // else if (!game_info->white_turn && !(b->black_pieces & from))
-    //     return false;
+    if (game_info->white_turn && !(b->white_pieces & from))
+        return false;
+    else if (!game_info->white_turn && !(b->black_pieces & from))
+        return false;
 
     if (!piece_at(b, from))
         return false;
