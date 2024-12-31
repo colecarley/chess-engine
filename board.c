@@ -26,7 +26,7 @@ static Bitboard king_row = 0b00010000;
 //             printf("\n");
 //         }
 //     }
-//
+// }
 
 void board_upate_all_pieces(Board *b)
 {
@@ -367,7 +367,7 @@ static bool is_valid_knight_move(Board *b, GameInfo *game_info, Bitboard from, B
 static bool is_piece_higher(Board *b, Bitboard from, uint8_t diff, int factor)
 {
     for (int i = 1; i < diff / factor; i++)
-        if (b->all_pieces & (from >> i * factor))
+        if (b->all_pieces & (from << i * factor))
             return true;
     return false;
 }
@@ -375,7 +375,7 @@ static bool is_piece_higher(Board *b, Bitboard from, uint8_t diff, int factor)
 static bool is_piece_lower(Board *b, Bitboard from, uint8_t diff, int factor)
 {
     for (int i = 1; i < diff / factor; i++)
-        if (b->all_pieces & (from << i * factor))
+        if (b->all_pieces & (from >> i * factor))
             return true;
     return false;
 }
